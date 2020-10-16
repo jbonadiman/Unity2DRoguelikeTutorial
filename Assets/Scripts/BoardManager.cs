@@ -12,29 +12,29 @@ public class BoardManager : MonoBehaviour
     [Serializable]
     public class Count
     {
-        public int Minimum { get; set; }
-        public int Maximum { get; set; }
+        public int minimum;
+        public int maximum;
 
         public Count(int min, int max)
         {
-            this.Minimum = min;
-            this.Maximum = max;
+            this.minimum = min;
+            this.maximum = max;
         }
     }
 
 
-    public int Columns { get; } = 8;
-    public int Rows { get; } = 8;
+    public int columns = 8;
+    public int rows = 8;
 
-    public Count WallCount { get; } = new Count(5, 9);
-    public Count FoodCount { get; } = new Count(1, 5);
-    
-    public readonly GameObject exit;
-    public readonly GameObject[] floorTiles;
-    public readonly GameObject[] wallTiles;
-    public readonly GameObject[] foodTiles;
-    public readonly GameObject[] enemyTiles;
-    public readonly GameObject[] outerWallTiles;
+    public Count wallCount = new Count(5, 9);
+    public Count foodCount = new Count(1, 5);
+
+    public GameObject exit;
+    public GameObject[] floorTiles;
+    public GameObject[] wallTiles;
+    public GameObject[] foodTiles;
+    public GameObject[] enemyTiles;
+    public GameObject[] outerWallTiles;
 
     private Transform boardHolder;
     private readonly List<Vector3> gridPositions = new List<Vector3>();
@@ -42,9 +42,9 @@ public class BoardManager : MonoBehaviour
     void InitializeList()
     {
         gridPositions.Clear();
-        for (int x = 1; x < this.Columns - 1; x++)
+        for (int x = 1; x < this.columns - 1; x++)
         {
-            for (int y = 1; y < this.Rows - 1; y++)
+            for (int y = 1; y < this.rows - 1; y++)
             {
                 gridPositions.Add(new Vector3(x, y));
             }
@@ -54,12 +54,12 @@ public class BoardManager : MonoBehaviour
     void BoardSetup()
     {
         this.boardHolder = new GameObject("Board").transform;
-        for (int x = -1; x < this.Columns + 1; x++)
+        for (int x = -1; x < this.columns + 1; x++)
         {
-            for (int y = -1; y < this.Rows + 1; y++)
+            for (int y = -1; y < this.rows + 1; y++)
             {
                 GameObject toInstantiate = floorTiles[Random.Range(0, floorTiles.Length)];
-                if (x == -1 || x == this.Columns || y == -1 || y == this.Rows)
+                if (x == -1 || x == this.columns || y == -1 || y == this.rows)
                 {
                     toInstantiate = outerWallTiles[Random.Range(0, outerWallTiles.Length)];
                 }
@@ -95,12 +95,12 @@ public class BoardManager : MonoBehaviour
     {
         BoardSetup();
         InitializeList();
-        LayoutObjectAtRandom(wallTiles, this.WallCount.Minimum, this.WallCount.Maximum);
-        LayoutObjectAtRandom(foodTiles, this.FoodCount.Minimum, this.FoodCount.Maximum);
+        LayoutObjectAtRandom(wallTiles, this.wallCount.minimum, this.wallCount.maximum);
+        LayoutObjectAtRandom(foodTiles, this.foodCount.minimum, this.foodCount.maximum);
 
         int enemyCount = (int)Mathf.Log(level, 2f);
         LayoutObjectAtRandom(enemyTiles, enemyCount, enemyCount);
 
-        Instantiate(exit, new Vector3(this.Columns - 1, this.Rows - 1), Quaternion.identity);
+        Instantiate(exit, new Vector3(this.columns - 1, this.rows - 1), Quaternion.identity);
     }
 }

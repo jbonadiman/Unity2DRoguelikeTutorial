@@ -1,18 +1,37 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
+    public static GameManager instance = null;
+    public BoardManager boardScript;
+
+    private const int level = 3;
+
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
-        
+        if (instance == null)
+        {
+            instance = this;
+        }
+        else if (instance != this)
+        {
+            Destroy(gameObject);
+        }
+
+        DontDestroyOnLoad(gameObject);
+        boardScript = GetComponent<BoardManager>();
+        InitGame();
+    }
+
+    void InitGame()
+    {
+        boardScript.SetupScene(level);
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 }
