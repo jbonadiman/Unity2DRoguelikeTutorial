@@ -1,9 +1,7 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 
-public abstract class NewBehaviourScript : MonoBehaviour
+public abstract class MovingObject : MonoBehaviour
 {
     public float moveTime = 0.1f;
     public LayerMask blockingLayer;
@@ -11,6 +9,7 @@ public abstract class NewBehaviourScript : MonoBehaviour
     private BoxCollider2D boxCollider;
     private Rigidbody2D rb2D;
     private float inverseMoveTime;
+    private bool isMoving;
 
     // Start is called before the first frame update
     protected virtual void Start()
@@ -22,16 +21,16 @@ public abstract class NewBehaviourScript : MonoBehaviour
 
     protected bool Move(int xDir, int yDir, out RaycastHit2D hit)
     {
-        Vector2 start = transform.position;
+        Vector2 start = this.transform.position;
         Vector2 end = start + new Vector2(xDir, yDir);
 
         boxCollider.enabled = false;
-        hit = Physics2D.Linecast(start, end, blockingLayer);
+        hit = Physics2D.Linecast(start, end, this.blockingLayer);
         boxCollider.enabled = true;
 
-        if (hit.transform == null)
+        if (hit.transform == null && !isMoving)
         {
-            StartCoroutine(SmoothMovement(end));
+            StartCoroutine(this.SmoothMovement(end));
             return true;
         }
 
@@ -40,7 +39,7 @@ public abstract class NewBehaviourScript : MonoBehaviour
 
     protected virtual void AttemptMove<T>(int xDir, int yDir) where T : Component
     {
-        bool canMove = Move(xDir, yDir, out RaycastHit2D hit);
+        bool canMove = this.Move(xDir, yDir, out RaycastHit2D hit);
 
         if (hit.transform == null) return;
 
@@ -51,14 +50,20 @@ public abstract class NewBehaviourScript : MonoBehaviour
 
     protected IEnumerator SmoothMovement(Vector3 end)
     {
+        this.isMoving = true;
         float sqrRemainingDistance = (transform.position - end).sqrMagnitude;
         while (sqrRemainingDistance > float.Epsilon)
         {
-            rb2D.MovePosition(Vector3.MoveTowards(rb2D.position, end, inverseMoveTime * Time.deltaTime));
+            Vector3 newPosition = Vector3.MoveTowards(rb2D.position, end, inverseMoveTime * Time.deltaTime);
+
+            rb2D.MovePosition(newPosition);
             sqrRemainingDistance = (transform.position - end).sqrMagnitude;
 
             yield return null;
         }
+
+        rb2D.MovePosition(end);
+        this.isMoving = false;
     }
 
     protected abstract void OnCantMove<T>(T component) where T : Component;
