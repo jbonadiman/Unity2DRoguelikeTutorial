@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 public class Player : MovingObject
 {
@@ -20,6 +21,7 @@ public class Player : MovingObject
 
     private Animator animator;
     private int food;
+    private Vector2 touchOrigin = -Vector2.one;
 
     protected override void Start()
     {
@@ -82,11 +84,34 @@ public class Player : MovingObject
     void Update()
     {
         if (!GameManager.instance.playersTurn) return;
+        int horizontal = 0;
+        int vertical = 0;
 
-        int horizontal = (int)Input.GetAxisRaw("Horizontal");
-        int vertical = (int)Input.GetAxisRaw("Vertical");
+#if UNITY_STANDALONE || UNITY_WEBGL
+        horizontal = (int)Input.GetAxisRaw("Horizontal");
+        vertical = (int)Input.GetAxisRaw("Vertical");
 
         if (horizontal != 0) vertical = 0; // Disable diagonal movement
+#else
+        if (Input.touchCount > 0)
+        {
+            Touch touch = Input.touches[0];
+            if (touch.phase == TouchPhase.Began)
+            {
+                touchOrigin = touch.position;
+            }
+            else if (touch.phase == TouchPhase.Ended && touchOrigin.x >= 0)
+            {
+                Vector2 touchEnd = touch.position;
+                float x = touchEnd.x - touchOrigin.x;
+                float y = touchEnd.y - touchOrigin.y;
+
+                touchOrigin.x -= 1;
+                if (Mathf.Abs(x) > Mathf.Abs(y)) horizontal = x > 0 ? 1 : -1;
+                else vertical = y > 0 ? 1 : -1;
+            }
+        }
+#endif
         if (horizontal != 0 || vertical != 0) this.AttemptMove<Wall>(horizontal, vertical);
     }
 
